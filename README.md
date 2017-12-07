@@ -1,2 +1,6 @@
 # al.bot
-Find the right phone using a chatbot
+Find the right phone using a chatbot.
+## How to use
+...
+## How it works
+...
