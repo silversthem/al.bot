@@ -7,8 +7,8 @@ CREATE TABLE Phone (
     id int PRIMARY KEY,
     name text,
     constructor text,
-    series text,
-    os text
+    os text,
+    price int
 )''')
 
 phones_db.commit()
@@ -16,15 +16,11 @@ phones_db.commit()
 phones_db.execute('''
 CREATE TABLE Phys (
     phone int,
-    dimx int,
-    dimy int,
-    dimz int,
     size int,
     weight int,
     colors text,
     is_tactil short,
     moveable_battery short,
-    resolution text,
     FOREIGN KEY(phone) REFERENCES Phone(id)
 )''')
 
@@ -43,16 +39,13 @@ CREATE TABLE Camera (
 phones_db.execute('''
 CREATE TABLE Hardware (
     phone int,
-    sim_type text,
-    charger_type text,
-    bluetooth int,
-    cell_reception text,
-    nfc short,
+    type_sim text,
+    bluetooth text,
+    cell_reception short,
     gps short,
     memory int,
-    memory_upgrade text,
+    memory_upgrade short,
     ram int,
-    audio text,
     processor text,
     battery_amp int,
     FOREIGN KEY(phone) REFERENCES Phone(id)

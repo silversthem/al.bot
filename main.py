@@ -3,10 +3,11 @@ from flask import request
 from flask import render_template
 from flask import redirect,url_for
 import sqlite3
+import Qdict
 
 app = Flask(__name__)
 
-qdict = {}
+qdict = Qdict.get_qdict()
 
 @app.route("/")
 def index():

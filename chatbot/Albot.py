@@ -7,28 +7,24 @@ def create_bot(db,qdict,session_id):
     cursor = db.cursor()
     rows = cursor.execute('SELECT * FROM Session_Step WHERE session_id = ' + str(int(session_id)))
     preds = []
-    if cursor.rowcount() > 0:
-        for row in rows: # Fetching predicats
-            parameter,predicat_type,value = row[4:7]
-            p = Predicat(predicat_type,parameter)
-            p.set_value(value)
-            preds.append(p)
-        # Returing new bot
-        return Albot(int(session_id),db,qdict,preds)
-    else:
-        # Invalid session
-        pass
+    for row in rows: # Fetching predicats
+        parameter,predicat_type,value = row[4:7]
+        p = Predicat(predicat_type,parameter)
+        p.set_value(value)
+        preds.append(p)
+    # Returing new bot
+    return Albot(int(session_id),db,qdict,preds)
 
 # If an answer has been found
 def state(db,session_id):
     cursor = db.cursor()
     rows = cursor.execute('SELECT answer FROM Session WHERE id = ' + str(int(session_id)))
-    if rows.rowcount() > 0:
-        answer = rows.fetchone()[1]
-        if answer is not '':
-            return (True,answer)
-        else:
-            return (False,'')
+    answer = rows.fetchone()
+    if answer is None:
+        return (False,'')
+    answer = answer[1]
+    if answer is not '':
+        return (True,answer)
     else:
         return (False,'')
 

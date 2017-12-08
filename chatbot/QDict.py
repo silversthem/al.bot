@@ -19,7 +19,7 @@ class QDict:
                 return q[1][0]
             else:
                 return q[0][0]
-    # Transforms a message in a predicat-type value, returns None if not possible
+    # Transforms a user message in a predicat-type value, returns None if not possible
     def parse_message(self,type,message):
         pass
     # Turns an answer into a predicate
@@ -29,10 +29,10 @@ class QDict:
             t,v = (None,None)
             if qcm:
                 t = q[1][2] # Type
-                v = q[1][3][message]
+                v = q[1][3][int(message)]
             else:
                 t = q[0][2] # Type
                 v = self.parse_message(t,message)
             p = Predicat(parameter,t)
-            p.value = message
+            p.set_value(v)
         return p
