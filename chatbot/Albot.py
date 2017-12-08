@@ -59,7 +59,7 @@ class Albot:
             self.query.add_predicat(pred)
             self.query.execute() # Running query
             if self.query.length() < 10: # Found answers
-                return (1,'Answer')
+                return (1,self.query.answer())
             else: # New question
                 self.ask(self.query.get_most_variant())
         else: # Predicat is not valid, calling for qcm question
