@@ -1,5 +1,6 @@
-import Query
-import QDict
+from . import Query
+from . import QDict
+from . import Predicat
 
 # Creates a albot instance from a session
 def create_bot(db,qdict,session_id):
@@ -9,8 +10,8 @@ def create_bot(db,qdict,session_id):
     preds = []
     for row in rows: # Fetching predicats
         parameter,predicat_type,value = row[4:7]
-        p = Predicat(predicat_type,parameter)
-        p.set_value(value)
+        p = Predicat.Predicat(predicat_type,parameter)
+        p.set_value(value,True)
         preds.append(p)
     # Returing new bot
     return Albot(int(session_id),db,qdict,preds)
@@ -20,7 +21,8 @@ def state(db,session_id):
     cursor = db.cursor()
     rows = cursor.execute('SELECT answer FROM Session WHERE id = ' + str(int(session_id)))
     answer = rows.fetchone()
-    if answer is None:
+    print(answer)
+    if len(answer) < 2:
         return (False,'')
     answer = answer[1]
     if answer is not '':
@@ -32,17 +34,18 @@ class Albot:
     # Creates a bot instance
     def __init__(self,s,db,qdict,predicats = []):
         self.db = db
-        self.query = Query(db,predicats)
-        self.current = current
+        self.query = Query.Query(db,predicats)
         self.qdict = qdict
         self.session = s
     # Returns last question for a session
     def get_last_question(self):
         cursor = self.db.cursor()
-        rows = cursor.execute('SELECT * FROM Session_Step WHERE session_id = ' + str(self.session) + 'ORDER BY id DESC LIMIT 1')
+        rows = cursor.execute('SELECT * FROM Session_Step WHERE session_id = ' + str(self.session) + ' ORDER BY id DESC LIMIT 1')
         return rows.fetchone()
     # Inserts answer for a question (updates sessions_steps table answer)
     def insert_answer(self,qid,message,pred_val):
+        if isinstance(pred_val,list):
+            pred_val = ','.join(pred_val)
         self.db.execute('UPDATE Session_Step SET answer = \"' + message + '\", value = \"' + pred_val + '\" WHERE id = ' + str(int(qid)))
         self.db.commit()
     # Handles an user answer, and returns either a phone or a new question
@@ -60,7 +63,7 @@ class Albot:
                 self.ask(self.query.get_most_variant())
         else: # Predicat is not valid, calling for qcm question
             self.insert_answer(q[0],message,'')
-            self.ask(param,qcm)
+            self.ask(param,True)
     # Inserts new question into database
     def ask(self,param,qcm = False):
         # Pulling question

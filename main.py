@@ -4,10 +4,12 @@ from flask import render_template
 from flask import redirect,url_for
 import sqlite3
 import Qdict
+from chatbot.Albot import Albot,create_bot,state
+from chatbot.QDict import QDict
 
 app = Flask(__name__)
 
-qdict = Qdict.get_qdict()
+qdict = QDict(Qdict.get_qdict())
 
 @app.route("/")
 def index():
@@ -29,10 +31,10 @@ def create_session():
     a.ask('price') # First question on most variable parameter
     db.close()
     # redirecting in new session
-    return redirect(url_for('chatbox',id=int(session[0])))
+    return redirect(url_for('chatbox',session_id=int(session[0])))
 
 
-@app.route("/session/<id>")
+@app.route("/session/<session_id>")
 def chatbox(session_id):
     global qdict
     # Rendering conversation
@@ -40,19 +42,16 @@ def chatbox(session_id):
     db = sqlite3.connect('db/sessions.sqlite')
     cursor = db.cursor()
     rows = cursor.execute('SELECT question,answer,qcm FROM Session_Step WHERE session_id = ' + str(int(session_id)))
-    if cursor.rowcount() > 0:
-        for row in rows: # Fetching messages
-            msg += {"author":"al.bot","content":row[0],"qcm":row[2]}
-            if row[1] is not "":
-                msg += {"author":"user","content":row[1],"qcm":'0'}
-    else: # Error
-        pass
+    for row in rows: # Fetching messages
+        msg += {"author":"al.bot","content":row[0],"qcm":row[2]}
+        if row[1] is not "":
+            msg += {"author":"user","content":row[1],"qcm":'0'}
     # Check if over
-    over,answer = state(session_id)
+    over,answer = state(db,session_id)
     if over:
         pass # Print answer in template
     db.close()
-    return render_template('session.html',messages=msg,session_id=id)
+    return render_template('session.html',messages=msg,session_id=session_id)
 
 
 @app.route("/send/<session_id>",methods=['POST'])
@@ -66,4 +65,4 @@ def interact(session_id):
     # Interacting with user
     albot.interact(message)
     # Returning to chatbox
-    return redirect(url_for('chatbox',id=session_id))
+    return redirect(url_for('chatbox',session_id=session_id))
