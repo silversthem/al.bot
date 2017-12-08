@@ -7,6 +7,9 @@ class Predicat:
     # Checks if predicat is valid
     def is_complete(self):
         return self.value is not None
+    # Sets predicat value if valid
+    def set_value(self,v):
+        pass
     # Parses to sql syntax
     def sql_query(self):
         pass

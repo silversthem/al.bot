@@ -6,12 +6,15 @@ import sqlite3
 
 app = Flask(__name__)
 
+qdict = {}
+
 @app.route("/")
 def index():
     return render_template('index.html')
 
 @app.route("/new_session")
 def create_session():
+    global qdict
     # Adding record into Session table
     db = sqlite3.connect('db/sessions.sqlite')
     db.execute('INSERT INTO Session VALUES (NULL,\"\")')
@@ -20,15 +23,17 @@ def create_session():
     cursor = db.cursor()
     cursor.execute('SELECT * FROM Session ORDER BY id DESC LIMIT 1')
     session = cursor.fetchone()
-    db.close()
     # Asking first question
-    # ...
+    a = Albot(session[0],db,qdict)
+    a.ask('parameter') # First question on most variable parameter
+    db.close()
     # redirecting in new session
     return redirect(url_for('chatbox',id=int(session[0])))
 
 
 @app.route("/session/<id>")
 def chatbox(session_id):
+    global qdict
     # Rendering conversation
     msg = []
     db = sqlite3.connect('db/sessions.sqlite')
@@ -51,6 +56,7 @@ def chatbox(session_id):
 
 @app.route("/send/<session_id>",methods=['POST'])
 def interact(session_id):
+    global qdict
     # Getting message
     message = request.form.get('message')
     db = sqlite3.connect('db/sessions.sqlite')
