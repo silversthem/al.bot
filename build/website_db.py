@@ -19,6 +19,7 @@ CREATE TABLE Session_Step (
     parameter text,
     predicat_type text,
     value text,
+    qcm short,
     FOREIGN KEY(session_id) REFERENCES Session(id)
 )''')
 

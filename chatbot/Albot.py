@@ -67,5 +67,9 @@ class Albot:
             self.ask(param,qcm)
     # Inserts new question into database
     def ask(self,param,qcm = False):
+        # Pulling question
         q = self.qdict.ask_for(param,qcm)
-        # ...
+        # Inserting question
+        qcm = '1' if qcm else '0'
+        self.db.execute('INSERT INTO Session_Step VALUES (NULL,'+ str(self.session) +',\"' + q[0] + '\",\"\",\"' + param + '\",\"' + q[1] + '\",\"\",\"'+ qcm +'\")')
+        self.db.commit()

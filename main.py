@@ -24,8 +24,8 @@ def create_session():
     cursor.execute('SELECT * FROM Session ORDER BY id DESC LIMIT 1')
     session = cursor.fetchone()
     # Asking first question
-    a = Albot(session[0],db,qdict)
-    a.ask('parameter') # First question on most variable parameter
+    a = Albot(int(session[0]),db,qdict)
+    a.ask('price') # First question on most variable parameter
     db.close()
     # redirecting in new session
     return redirect(url_for('chatbox',id=int(session[0])))
@@ -38,12 +38,12 @@ def chatbox(session_id):
     msg = []
     db = sqlite3.connect('db/sessions.sqlite')
     cursor = db.cursor()
-    rows = cursor.execute('SELECT question,answer FROM Session_Step WHERE session_id = ' + str(int(session_id)))
+    rows = cursor.execute('SELECT question,answer,qcm FROM Session_Step WHERE session_id = ' + str(int(session_id)))
     if cursor.rowcount() > 0:
         for row in rows: # Fetching messages
-            msg += {"author":"al.bot","content":row[0]}
+            msg += {"author":"al.bot","content":row[0],"qcm":row[2]}
             if row[1] is not "":
-                msg += {"author":"user","content":row[1]}
+                msg += {"author":"user","content":row[1],"qcm":'0'}
     else: # Error
         pass
     # Check if over
