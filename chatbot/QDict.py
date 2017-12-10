@@ -16,9 +16,9 @@ class QDict:
         q = self.qbank.get(parameter,None) # Question bank entry
         if q is not None:
             if qcm:
-                return q[1][0]
+                return (q[1][0],q[1][2])
             else:
-                return q[0][0]
+                return (q[0][0],q[0][1])
     # Transforms a user message in a predicat-type value, returns None if not possible
     def parse_message(self,t,message):
         message = message.lower()
@@ -51,10 +51,7 @@ class QDict:
                     nb_int +=1
                 except:
                     pass
-            if nb_int == 1:
-                return (value[0])
-            elif nb_int >= 2:
-                return (value[0],value[1])
+            return value
         elif t == "union":
             union = []
             nb_union = 0

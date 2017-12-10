@@ -20,6 +20,7 @@ def create_session():
     global qdict
     # Adding record into Session table
     db = sqlite3.connect('db/sessions.sqlite')
+    phone_db = sqlite3.connect('db/phones.sqlite')
     db.execute('INSERT INTO Session VALUES (NULL,\"\")')
     db.commit()
     # Fetching Session id
@@ -27,9 +28,10 @@ def create_session():
     cursor.execute('SELECT * FROM Session ORDER BY id DESC LIMIT 1')
     session = cursor.fetchone()
     # Asking first question
-    a = Albot(int(session[0]),db,qdict)
+    a = Albot(int(session[0]),db,phone_db,qdict)
     a.ask('price') # First question on most variable parameter
     db.close()
+    phone_db.close()
     # redirecting in new session
     return redirect(url_for('chatbox',session_id=int(session[0])))
 
@@ -43,9 +45,9 @@ def chatbox(session_id):
     cursor = db.cursor()
     rows = cursor.execute('SELECT question,answer,qcm FROM Session_Step WHERE session_id = ' + str(int(session_id)))
     for row in rows: # Fetching messages
-        msg += {"author":"al.bot","content":row[0],"qcm":row[2]}
+        msg.append({"author":"al.bot","content":row[0],"qcm":row[2]})
         if row[1] is not "":
-            msg += {"author":"user","content":row[1],"qcm":'0'}
+            msg.append({"author":"user","content":row[1],"qcm":'0'})
     # Check if over
     over,answer = state(db,session_id)
     if over:
@@ -60,9 +62,12 @@ def interact(session_id):
     # Getting message
     message = request.form.get('message')
     db = sqlite3.connect('db/sessions.sqlite')
+    phone_db = sqlite3.connect('db/phones.sqlite')
     # Creating bot
-    albot = create_bot(db,qdict,session_id)
+    albot = create_bot(db,phone_db,qdict,session_id)
     # Interacting with user
     albot.interact(message)
     # Returning to chatbox
+    db.close()
+    phone_db.close()
     return redirect(url_for('chatbox',session_id=session_id))

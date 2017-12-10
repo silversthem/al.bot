@@ -13,7 +13,7 @@ def get_variance_dict():
     'memory_upgrade':[0,0]}
     return vrs
 
-def handle_variance(dict,row,c):
+def handle_variance(vrs,row,c):
     p = 1 if c % 2 is 1 else -1
     vrs['price'] += row[4]*p
     vrs['OS'][0 if row[3] is "Android" else 1] += 1
@@ -35,12 +35,13 @@ class Query:
         self.most_variant = None
         self.cursor = None
         self.answer = None
+        self.length = 0
     # Returns first row
-    def answer(self):
+    def get_answer(self):
         return self.answer
     # Adds a predicat to the array
     def add_predicat(self,pred):
-        self.preds.append(pred)
+        self.predicats.append(pred)
     # Runs the query
     def execute(self):
         self.cursor = self.database.cursor()
@@ -54,18 +55,15 @@ class Query:
         c = 0
         while row is not None:
             handle_variance(vrs,row,c)
-            # Computing for occurence of parameters
             row = self.cursor.fetchone()
             c += 1
+        self.length = c
         # Finding most variant
         self.most_variant = max(vrs,key=vrs.get)
 
     # Gets most varied parameter
     def get_most_variant(self):
         return self.most_variant
-    # Returns number of rows
-    def length(self):
-        return 0 if self.cursor is None else self.cursor.rowcount()
     # Turns predicat array into sql select query
     def sql_query(self):
         fr = ' FROM Phone JOIN Phys ON Phone.id = Phys.phone JOIN Camera ON Phone.id = Camera.phone JOIN Hardware ON Phone.id = Hardware.phone'
@@ -76,5 +74,6 @@ class Query:
         else:
             q = 'SELECT *' + fr + ' WHERE ' + self.predicats[0].sql_query()
             for i in range(1,len(self.predicats)):
-                q += ' AND ' + self.predicats[i].sql_query()
+                if isinstance(self.predicats[i],Predicat.Predicat):
+                    q += ' AND ' + self.predicats[i].sql_query()
             return q
